@@ -3,32 +3,34 @@ from tkinter import ttk
 import sqlite3
 
 
-class Top(tk.Frame):
-    def __init__(self, root):
+class Top(tk.Frame):  # основное окно
+    def __init__(self, root): # инициализация класса
         super().__init__(root)
         self.init_main()
         self.db = db 
         self.view_records()
 
-    def init_main(self):
-        toolbar = tk.Frame(bg="#badbad", bd=2)
+    def init_main(self): # инициализация основного окна
+        toolbar = tk.Frame(bg="#badbad", bd=2) # создание панели инструментов
         toolbar.pack(side=tk.TOP, fill=tk.X)
-        self.add_img = tk.PhotoImage(file="./img/add.png")
+        self.add_img = tk.PhotoImage(file="./img/add.png") # загрузка фото кнопки
         btn_open_dialog = tk.Button(
             toolbar, bg="#CEADDB", bd=0, image=self.add_img, command=self.open_dialog
-        )
+        ) # создание кнопки
         btn_open_dialog.pack(side=tk.LEFT)
 
         self.tree = ttk.Treeview(
             self, columns=("ID", "name", "tel", "email", "money"), height=45, show="headings"
         )
 
+        # настройка параметров колонок таблицы
         self.tree.column("ID", width=30, anchor=tk.CENTER)
         self.tree.column("name", width=150, anchor=tk.CENTER)
         self.tree.column("tel", width=150, anchor=tk.CENTER)
         self.tree.column("email", width=150, anchor=tk.CENTER)
         self.tree.column("money", width=150, anchor=tk.CENTER)
 
+        # настройка заголовков колонок таблицы
         self.tree.heading("ID", text="ID")
         self.tree.heading("name", text="ФИО")
         self.tree.heading("tel", text="Телефон")
@@ -37,6 +39,7 @@ class Top(tk.Frame):
 
         self.tree.pack(side=tk.LEFT)
 
+        # загрузка фото и создание ещё кнопок
         self.update_img = tk.PhotoImage(file="./img/update.png")
         btn_edit_dialog = tk.Button(
             toolbar,
@@ -67,21 +70,26 @@ class Top(tk.Frame):
         )
         btn_search.pack(side=tk.LEFT)
 
+    # открытие диалогового окна для добавления записей
     def open_dialog(self):
         Child()
 
+    #добавление записей в бд
     def records(self, name, tel, email, money):
         self.db.insert_data(name, tel, email, money)
         self.view_records()
 
+    # просмотр существующих записей 
     def view_records(self):
         self.db.cursor.execute("SELECT * FROM db")
-        [self.tree.delete(i) for i in self.tree.get_children()]
-        [self.tree.insert("", "end", values=row) for row in self.db.cursor.fetchall()]
+        [self.tree.delete(i) for i in self.tree.get_children()] # очистка таблицы перед добавлением
+        [self.tree.insert("", "end", values=row) for row in self.db.cursor.fetchall()] # добавление записей из бд в таблицу
 
+    # открытие диалогового окна для редактирования записей
     def open_update_dialog(self):
         Update()
 
+    # обновление записей
     def update_records(self, name, tel, email, money):
         self.db.cursor.execute(
             """UPDATE db SET name=?, tel=?, email=?, money=? WHERE id=?""",
@@ -90,6 +98,7 @@ class Top(tk.Frame):
         self.db.conn.commit()
         self.view_records()
 
+    # удаление записей
     def delete_records(self):
         for selection_items in self.tree.selection():
             self.db.cursor.execute(
@@ -98,9 +107,11 @@ class Top(tk.Frame):
         self.db.conn.commit()
         self.view_records()
 
+    # открытие диалогового окна для поиска записей
     def open_search_dialog(self):
         Search()
 
+    # поиск записей
     def search_records(self, name):
         name = "%" + name + "%"
         self.db.cursor.execute("SELECT * FROM db WHERE name LIKE ?", (name,))
@@ -108,7 +119,7 @@ class Top(tk.Frame):
         [self.tree.delete(i) for i in self.tree.get_children()]
         [self.tree.insert("", "end", values=row) for row in self.db.cursor.fetchall()]
 
-
+# класс для дочернего окна
 class Child(tk.Toplevel):
     def __init__(self):
         super().__init__(root)
@@ -116,6 +127,7 @@ class Child(tk.Toplevel):
         self.view = app
 
     def init_child(self):
+        # настройки окна
         self.title("Добавить сотрудника")
         self.geometry("600x420")
         self.resizable(False, False)
@@ -124,6 +136,7 @@ class Child(tk.Toplevel):
         self.grab_set()
         self.focus_set()
 
+        # метки для полей ввода
         label_name = tk.Label(self, text="ФИО:", bg='#CEADDB')
         label_name.place(x=50, y=80)
         label_select = tk.Label(self, text="Телефон:", bg='#CEADDB')
@@ -133,6 +146,7 @@ class Child(tk.Toplevel):
         label_pass = tk.Label(self, text="Заработная плата:", bg='#CEADDB')
         label_pass.place(x=50, y=170)
 
+        # поля ввода для данных сотрудника
         self.entry_name = ttk.Entry(self)
         self.entry_name.place(x=200, y=80)
         self.entry_email = ttk.Entry(self)
@@ -142,12 +156,15 @@ class Child(tk.Toplevel):
         self.entry_money = ttk.Entry(self)
         self.entry_money.place(x=200, y=170)
 
+        # кнопка для закрытия окна
         self.btn_cancel = ttk.Button(self, text="Закрыть", command=self.destroy)
         self.btn_cancel.place(x=300, y=330)
 
+        # кнопка для добавления сотрудника
         self.btn_ok = ttk.Button(self, text="Добавить")
         self.btn_ok.place(x=220, y=330)
 
+        # привязка функции при нажатии на кнопку "Добавить"
         self.btn_ok.bind(
             "<Button-1>",
             lambda event: self.view.records(
@@ -155,7 +172,7 @@ class Child(tk.Toplevel):
             ),
         )
 
-
+# класс для окна редактирования записи
 class Update(Child):
     def __init__(self):
         super().__init__()
@@ -165,10 +182,15 @@ class Update(Child):
         self.default_data()
 
     def init_edit(self):
+        # настройка окна
         self.title("Изменение данных")
         self.configure(bg='#badbad')
+
+        # кнопка для изменения данных
         btn_edit = ttk.Button(self, text="Изменить")
         btn_edit.place(x=220, y=330)
+
+        # привязка функции при нажатии на кнопку "Изменить"
         btn_edit.bind(
             "<Button-1>",
             lambda event: self.view.update_records(
@@ -176,21 +198,26 @@ class Update(Child):
             ),
         )
         
+        # закрытие окна при нажатии на кнопку "Изменить"
         btn_edit.bind("<Button-1>", lambda event: self.destroy(), add="+")
-        self.btn_ok.destroy()
+        self.btn_ok.destroy() # удаление кнопки "Добавить"
 
     def default_data(self):
+        # получение данных выбранной записи
         self.db.cursor.execute(
             "SELECT * FROM db WHERE id=?",
             self.view.tree.set(self.view.tree.selection()[0], "#1"),
         )
+
         row = self.db.cursor.fetchone()
+
+        # заполнение полей ввода данными из выбранной записи
         self.entry_name.insert(0, row[1])
         self.entry_email.insert(0, row[2])
         self.entry_tel.insert(0, row[3])
         self.entry_money.insert(0, row[4])
 
-
+# класс для окна поиска
 class Search(tk.Toplevel):
     def __init__(self):
         super().__init__()
@@ -198,33 +225,45 @@ class Search(tk.Toplevel):
         self.view = app
 
     def init_search(self):
+        # настройка окна
         self.title("Поиск по ФИО:")
         self.geometry("300x200")
         self.resizable(False, False)
         self.configure(bg='#badbad')
 
+        # метка для отображения надписи "ФИО:"
         label_search = tk.Label(self, text="ФИО:", bg='#CEADDB')
         label_search.place(x=50, y=20)
 
+        # поле ввода для поиска
         self.entry_search = ttk.Entry(self)
         self.entry_search.place(x=100, y=20, width=150)
 
+        # кнопка для закрытия окна
         btn_cancel = ttk.Button(self, text="Закрыть!", command=self.destroy)
         btn_cancel.place(x=185, y=50)
 
+        # кнопка для выполнения поиска
         search_btn = ttk.Button(self, text="Найти!")
         search_btn.place(x=105, y=50)
+
+        # привязка функции при нажатии на кнопку "Найти"
         search_btn.bind(
             "<Button-1>",
             lambda event: self.view.search_records(self.entry_search.get())
         )
+
+        # закрытие окна при нажатии на кнопку "Найти"
         search_btn.bind("<Button-1>", lambda event: self.destroy(), add="+")
 
 
+# класс для работы с базой данных
 class DB:
     def __init__(self):
         self.conn = sqlite3.connect("db.db")
         self.cursor = self.conn.cursor()
+
+        # создание таблицы, если она не существует
         self.cursor.execute(
             """CREATE TABLE IF NOT EXISTS db (
                 id INTEGER PRIMARY KEY,
@@ -238,6 +277,7 @@ class DB:
         self.conn.commit()
         
     def insert_data(self, name, tel, email, money):
+        # вставка данных в таблицу
         self.cursor.execute(
             """INSERT INTO db (name, tel, email, money) VALUES(?, ?, ?, ?)""", (name, tel, email, money)
         )
@@ -250,9 +290,13 @@ if __name__ == "__main__":
     db = DB()
     app = Top(root)
     app.pack()
+
+    # настройки главного окна
     root.title("Список сотрудников компании")
     root.geometry("865x650")
     root['background'] = '#badbad'
     root.resizable(False, False)
+
+    # запуск главного цикла
     root.mainloop()
 
