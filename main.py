@@ -4,23 +4,23 @@ import sqlite3
 
 
 class Top(tk.Frame):  # основное окно
-    def __init__(self, root): # инициализация класса
+    def __init__(self, root): 
         super().__init__(root)
         self.init_main()
         self.db = db 
         self.view_records()
 
-    def init_main(self): # инициализация основного окна
-        toolbar = tk.Frame(bg="#badbad", bd=2) # создание панели инструментов
+    def init_main(self): 
+        toolbar = tk.Frame(bg="#AFEEEE", bd=2) # создание панели инструментов
         toolbar.pack(side=tk.TOP, fill=tk.X)
         self.add_img = tk.PhotoImage(file="./img/add.png") # загрузка фото кнопки
         btn_open_dialog = tk.Button(
-            toolbar, bg="#CEADDB", bd=0, image=self.add_img, command=self.open_dialog
+            toolbar, bg="#ffc0cb", bd=0, image=self.add_img, command=self.open_dialog
         ) # создание кнопки
         btn_open_dialog.pack(side=tk.LEFT)
 
         self.tree = ttk.Treeview(
-            self, columns=("ID", "name", "tel", "email", "money"), height=45, show="headings"
+            self, columns=("ID", "name", "tel", "email", "salary"), height=45, show="headings"
         )
 
         # настройка параметров колонок таблицы
@@ -28,14 +28,14 @@ class Top(tk.Frame):  # основное окно
         self.tree.column("name", width=150, anchor=tk.CENTER)
         self.tree.column("tel", width=150, anchor=tk.CENTER)
         self.tree.column("email", width=150, anchor=tk.CENTER)
-        self.tree.column("money", width=150, anchor=tk.CENTER)
+        self.tree.column("salary", width=150, anchor=tk.CENTER)
 
         # настройка заголовков колонок таблицы
         self.tree.heading("ID", text="ID")
         self.tree.heading("name", text="ФИО")
         self.tree.heading("tel", text="Телефон")
         self.tree.heading("email", text="Email")
-        self.tree.heading("money", text="Заработная плата")
+        self.tree.heading("salary", text="Заработная плата")
 
         self.tree.pack(side=tk.LEFT)
 
@@ -43,7 +43,7 @@ class Top(tk.Frame):  # основное окно
         self.update_img = tk.PhotoImage(file="./img/update.png")
         btn_edit_dialog = tk.Button(
             toolbar,
-            bg="#CEADDB",
+            bg="#ffc0cb",
             bd=0,
             image=self.update_img,
             command=self.open_update_dialog,
@@ -53,7 +53,7 @@ class Top(tk.Frame):  # основное окно
         self.delete_img = tk.PhotoImage(file="./img/delete.png")
         btn_delete = tk.Button(
             toolbar,
-            bg="#CEADDB",
+            bg="#ffc0cb",
             bd=0,
             image=self.delete_img,
             command=self.delete_records,
@@ -63,7 +63,7 @@ class Top(tk.Frame):  # основное окно
         self.search_img = tk.PhotoImage(file="./img/search.png")
         btn_search = tk.Button(
             toolbar,
-            bg="#CEADDB",
+            bg="#ffc0cb",
             bd=0,
             image=self.search_img,
             command=self.open_search_dialog,
@@ -75,8 +75,8 @@ class Top(tk.Frame):  # основное окно
         Child()
 
     #добавление записей в бд
-    def records(self, name, tel, email, money):
-        self.db.insert_data(name, tel, email, money)
+    def records(self, name, tel, email, salary):
+        self.db.insert_data(name, tel, email, salary)
         self.view_records()
 
     # просмотр существующих записей 
@@ -90,10 +90,10 @@ class Top(tk.Frame):  # основное окно
         Update()
 
     # обновление записей
-    def update_records(self, name, tel, email, money):
+    def update_records(self, name, tel, email, salary):
         self.db.cursor.execute(
-            """UPDATE db SET name=?, tel=?, email=?, money=? WHERE id=?""",
-            (name, tel, email, money, self.tree.set(self.tree.selection()[0], "#1")),
+            """UPDATE db SET name=?, tel=?, email=?, salary=? WHERE id=?""",
+            (name, tel, email, salary, self.tree.set(self.tree.selection()[0], "#1")),
         )
         self.db.conn.commit()
         self.view_records()
@@ -131,20 +131,20 @@ class Child(tk.Toplevel):
         self.title("Добавить сотрудника")
         self.geometry("600x420")
         self.resizable(False, False)
-        self.configure(bg='#badbad')
+        self.configure(bg='#AFEEEE')
 
         self.grab_set()
         self.focus_set()
 
         # метки для полей ввода
-        label_name = tk.Label(self, text="ФИО:", bg='#CEADDB')
+        label_name = tk.Label(self, text="ФИО:", bg='#FFC0CB')
         label_name.place(x=50, y=80)
-        label_select = tk.Label(self, text="Телефон:", bg='#CEADDB')
+        label_select = tk.Label(self, text="Телефон:", bg='#FFC0CB')
         label_select.place(x=50, y=110)
-        label_sum = tk.Label(self, text="E-mail:", bg='#CEADDB')
+        label_sum = tk.Label(self, text="E-mail:", bg='#FFC0CB')
         label_sum.place(x=50, y=140)
-        label_pass = tk.Label(self, text="Заработная плата:", bg='#CEADDB')
-        label_pass.place(x=50, y=170)
+        label_sal = tk.Label(self, text="Заработная плата:", bg='#FFC0CB')
+        label_sal.place(x=50, y=170)
 
         # поля ввода для данных сотрудника
         self.entry_name = ttk.Entry(self)
@@ -153,8 +153,8 @@ class Child(tk.Toplevel):
         self.entry_email.place(x=200, y=110)
         self.entry_tel = ttk.Entry(self)
         self.entry_tel.place(x=200, y=140)
-        self.entry_money = ttk.Entry(self)
-        self.entry_money.place(x=200, y=170)
+        self.entry_salary = ttk.Entry(self)
+        self.entry_salary.place(x=200, y=170)
 
         # кнопка для закрытия окна
         self.btn_cancel = ttk.Button(self, text="Закрыть", command=self.destroy)
@@ -168,7 +168,7 @@ class Child(tk.Toplevel):
         self.btn_ok.bind(
             "<Button-1>",
             lambda event: self.view.records(
-                self.entry_name.get(), self.entry_email.get(), self.entry_tel.get(), self.entry_money.get()
+                self.entry_name.get(), self.entry_email.get(), self.entry_tel.get(), self.entry_salary.get()
             ),
         )
 
@@ -184,7 +184,7 @@ class Update(Child):
     def init_edit(self):
         # настройка окна
         self.title("Изменение данных")
-        self.configure(bg='#badbad')
+        self.configure(bg='#AFEEEE')
 
         # кнопка для изменения данных
         btn_edit = ttk.Button(self, text="Изменить")
@@ -194,7 +194,7 @@ class Update(Child):
         btn_edit.bind(
             "<Button-1>",
             lambda event: self.view.update_records(
-                self.entry_name.get(), self.entry_email.get(), self.entry_tel.get(), self.entry_money.get()
+                self.entry_name.get(), self.entry_email.get(), self.entry_tel.get(), self.entry_salary.get()
             ),
         )
         
@@ -206,7 +206,7 @@ class Update(Child):
         # получение данных выбранной записи
         self.db.cursor.execute(
             "SELECT * FROM db WHERE id=?",
-            self.view.tree.set(self.view.tree.selection()[0], "#1"),
+            self.view.tree.set(self.view.tree.selection()[-1], "#1"),
         )
 
         row = self.db.cursor.fetchone()
@@ -215,7 +215,7 @@ class Update(Child):
         self.entry_name.insert(0, row[1])
         self.entry_email.insert(0, row[2])
         self.entry_tel.insert(0, row[3])
-        self.entry_money.insert(0, row[4])
+        self.entry_salary.insert(0, row[4])
 
 # класс для окна поиска
 class Search(tk.Toplevel):
@@ -229,10 +229,10 @@ class Search(tk.Toplevel):
         self.title("Поиск по ФИО:")
         self.geometry("300x200")
         self.resizable(False, False)
-        self.configure(bg='#badbad')
+        self.configure(bg='#ffc0cb')
 
         # метка для отображения надписи "ФИО:"
-        label_search = tk.Label(self, text="ФИО:", bg='#CEADDB')
+        label_search = tk.Label(self, text="ФИО:", bg='#AFEEEE')
         label_search.place(x=50, y=20)
 
         # поле ввода для поиска
@@ -270,16 +270,16 @@ class DB:
                 name TEXT,
                 tel TEXT,
                 email TEXT,
-                money INT
+                salary INT
             )"""
         )
 
         self.conn.commit()
         
-    def insert_data(self, name, tel, email, money):
+    def insert_data(self, name, tel, email, salary):
         # вставка данных в таблицу
         self.cursor.execute(
-            """INSERT INTO db (name, tel, email, money) VALUES(?, ?, ?, ?)""", (name, tel, email, money)
+            """INSERT INTO db (name, tel, email, salary) VALUES(?, ?, ?, ?)""", (name, tel, email, salary)
         )
         
         self.conn.commit()
@@ -294,9 +294,10 @@ if __name__ == "__main__":
     # настройки главного окна
     root.title("Список сотрудников компании")
     root.geometry("865x650")
-    root['background'] = '#badbad'
+    root['background'] = '#AFEEEE'
     root.resizable(False, False)
 
     # запуск главного цикла
     root.mainloop()
 
+# помогал tg:@noshicotaru
